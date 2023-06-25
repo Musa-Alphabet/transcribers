@@ -1,0 +1,277 @@
+import sublime
+import sublime_plugin
+
+#this function produces the dict.js file, not the Dictionary.lst file
+#22may23
+#execute view.run_command('dict')
+
+class DictCommand(sublime_plugin.TextCommand):
+	def replaceAll(self, edit, roman, musa):
+		rlist = reversed(self.view.find_all(roman))
+		for r in rlist:
+			self.view.replace(edit, r, musa)
+	def aspirate(self, edit, plosive, liquid, vowel):
+		self.replaceAll(edit, plosive+liquid+vowel, plosive+"X"+liquid+vowel)
+	def insertBreak(self, edit):
+		result = []
+		regions = self.view.find_all("([^RWY][0-2]) ([AEIOU][AEHORWXY][0-2])", 0, r"\1 BREAK \2", result)
+		for idx, region in enumerate(reversed(regions)):
+			self.view.replace(edit, region, result[-idx-1])
+		regions = self.view.find_all("(R0) ([AEIOU][AEHORWXY][0-2])", 0, r"\1 R \2", result)
+		for idx, region in enumerate(reversed(regions)):
+			self.view.replace(edit, region, result[-idx-1])
+		regions = self.view.find_all("(W0) ([AEIOU][AEHORWXY][0-2])", 0, r"\1 W \2", result)
+		for idx, region in enumerate(reversed(regions)):
+			self.view.replace(edit, region, result[-idx-1])
+		regions = self.view.find_all("(Y0) ([AEIOU][AEHORWXY][0-2])", 0, r"\1 Y \2", result)
+		for idx, region in enumerate(reversed(regions)):
+			self.view.replace(edit, region, result[-idx-1])
+	def run(self, edit):
+		# add space at end of each line
+		self.replaceAll(edit, "\n", " \n")
+		# replace dot with _d
+		self.replaceAll(edit, "\.", "_d") # leave in purple
+		# replace hyphen with _h
+		self.replaceAll(edit, "-", "_h")
+		# replace apostrophe with _i
+		self.replaceAll(edit, "\'", "_i")
+		# use _1 _2 _3 for heterophones
+		self.replaceAll(edit, "\(1\)", "_1")
+		self.replaceAll(edit, "\(2\)", "_2")
+		self.replaceAll(edit, "\(3\)", "_3")
+		# replace L with LL after vowels
+		self.replaceAll(edit, "0 L ", "0 LL ")
+		self.replaceAll(edit, "1 L ", "1 LL ")
+		self.replaceAll(edit, "2 L ", "2 LL ")
+		self.replaceAll(edit, "R L ", "R LL ")
+		# back-replace LL with L before vowels
+		self.replaceAll(edit, " LL A", " L A")
+		self.replaceAll(edit, " LL E", " L E")
+		self.replaceAll(edit, " LL I", " L I")
+		self.replaceAll(edit, " LL O", " L O")
+		self.replaceAll(edit, " LL U", " L U")
+		# break diphthongs before final LL
+		self.replaceAll(edit, "Y0 LL $", "Y0 AX0 LL ")
+		self.replaceAll(edit, "Y1 LL $", "Y1 AX0 LL ")
+		self.replaceAll(edit, "Y2 LL $", "Y2 AX0 LL ")
+		self.replaceAll(edit, "W0 LL $", "W0 AX0 LL ")
+		self.replaceAll(edit, "W1 LL $", "W1 AX0 LL ")
+		self.replaceAll(edit, "W2 LL $", "W2 AX0 LL ")
+		self.replaceAll(edit, "ER1 LL $", "ER1 AX0 LL ")
+		self.replaceAll(edit, "R LL $", "R AX0 LL ")
+		# break diphthongs before final LL Z
+		self.replaceAll(edit, "Y0 LL Z $", "Y0 AX0 LL Z ")
+		self.replaceAll(edit, "Y1 LL Z $", "Y1 AX0 LL Z ")
+		self.replaceAll(edit, "Y2 LL Z $", "Y2 AX0 LL Z ")
+		self.replaceAll(edit, "W0 LL Z $", "W0 AX0 LL Z ")
+		self.replaceAll(edit, "W1 LL Z $", "W1 AX0 LL Z ")
+		self.replaceAll(edit, "W2 LL Z $", "W2 AX0 LL Z ")
+		self.replaceAll(edit, "ER1 LL Z $", "ER1 AX0 LL Z ")
+		self.replaceAll(edit, "R LL Z $", "R AX0 LL Z ")
+		# break diphthongs before final LL D
+		self.replaceAll(edit, "Y0 LL D $", "Y0 AX0 LL D ")
+		self.replaceAll(edit, "Y1 LL D $", "Y1 AX0 LL D ")
+		self.replaceAll(edit, "Y2 LL D $", "Y2 AX0 LL D ")
+		self.replaceAll(edit, "W0 LL D $", "W0 AX0 LL D ")
+		self.replaceAll(edit, "W1 LL D $", "W1 AX0 LL D ")
+		self.replaceAll(edit, "W2 LL D $", "W2 AX0 LL D ")
+		self.replaceAll(edit, "ER1 LL D $", "ER1 AX0 LL D ")
+		self.replaceAll(edit, "R LL D $", "R AX0 LL D ")
+		# break diphthongs before final LL D Z
+		self.replaceAll(edit, "Y0 LL D Z $", "Y0 AX0 LL D Z ")
+		self.replaceAll(edit, "Y1 LL D Z $", "Y1 AX0 LL D Z ")
+		self.replaceAll(edit, "Y2 LL D Z $", "Y2 AX0 LL D Z ")
+		self.replaceAll(edit, "W0 LL D Z $", "W0 AX0 LL D Z ")
+		self.replaceAll(edit, "W1 LL D Z $", "W1 AX0 LL D Z ")
+		self.replaceAll(edit, "W2 LL D Z $", "W2 AX0 LL D Z ")
+		self.replaceAll(edit, "ER1 LL D Z $", "ER1 AX0 LL D Z ")
+		self.replaceAll(edit, "R LL D Z $", "R AX0 LL D Z ")
+		# glottalize final P T K
+		self.replaceAll(edit, " P $", " PQ ")
+		self.replaceAll(edit, " T $", " TQ ")
+		self.replaceAll(edit, " K $", " KQ ")
+		# glottalize P T K before another consonant, not L R W Y S
+		self.replaceAll(edit, " P (?=[BCDFGHJKMNPQTVXZ])", " PQ ")
+		self.replaceAll(edit, " T (?=[BCDFGHJKMNPQTVXZ])", " TQ ")
+		self.replaceAll(edit, " K (?=[BCDFGHJKMNPQTVXZ])", " KQ ")
+		# aspirate P T K CH at beginning of word
+		self.replaceAll(edit, ": P ", ": PX ")
+		self.replaceAll(edit, ": T ", ": TX ")
+		self.replaceAll(edit, ": K ", ": KX ")
+		self.replaceAll(edit, ": CH ", ": CHX ")
+		# aspirate P T K CH at beginning of stressed syllable midword
+		plosivelist = [" P", " T", " K", " CH"]
+		liquidlist = ["", " R", " L", " Y", " W"]
+		vowellist = [" AA1", " AE1", " AH1", " AO1", " AW1", " AY1", " EH1", " ER1", " EY1", " IH1", " IY1", " OW1", " OY1", " UH1", " UW1"]
+		for v in vowellist:
+			for l in liquidlist:
+				for p in plosivelist:
+					self.aspirate(edit, p, l, v)	
+		# back-deaspirate P T K CH after S
+		self.replaceAll(edit, "S PX ", "S P ")
+		self.replaceAll(edit, "S TX ", "S T ")
+		self.replaceAll(edit, "S KX ", "S K ")
+		self.replaceAll(edit, "S CHX ", "S CH ")
+		# back-deaspirate TH and TS
+		self.replaceAll(edit, "TXH", "TH")
+		self.replaceAll(edit, "TXS", "TS")
+		self.replaceAll(edit, "TXZ", "TZ")
+		# devoice initial B D G JH
+		self.replaceAll(edit, ": B ", ": P ")
+		self.replaceAll(edit, ": D ", ": T ")
+		self.replaceAll(edit, ": G ", ": K ")
+		self.replaceAll(edit, ": JH ", ": CH ")
+		# devoice B D G JH after unvoiced
+		self.replaceAll(edit, "(?<=[PTKFSH]) B ", " P ")
+		self.replaceAll(edit, "(?<=[PTKFSH]) D ", " T ")
+		self.replaceAll(edit, "(?<=[PTKFSH]) G ", " K ")
+		self.replaceAll(edit, "(?<=[PTKFSH]) JH ", " CH ")
+		# devoice B D G JH after unvoiced digraphs
+		self.replaceAll(edit, "(?<=[CST])H B ", "H P ")
+		self.replaceAll(edit, "(?<=[CST])H D ", "H T ")
+		self.replaceAll(edit, "(?<=[CST])H G ", "H K ")
+		self.replaceAll(edit, "(?<=[CST])H JH ", "H CH ")
+		# devoice final B D G JH
+		self.replaceAll(edit, " B $", " P ")
+		self.replaceAll(edit, " D $", " T ")
+		self.replaceAll(edit, " G $", " K ")
+		self.replaceAll(edit, " JH $", " CH ")
+		# devoice B D G JH before unvoiced
+		self.replaceAll(edit, " B (?=[PTKFSCH])", " P ")
+		self.replaceAll(edit, " D (?=[PTKFSCH])", " T ")
+		self.replaceAll(edit, " G (?=[PTKFSCH])", " K ")
+		self.replaceAll(edit, " JH (?=[PTKFSCH])", " CH ")
+		# replace sequences with affricates
+		self.replaceAll(edit, " TX SH ", " CHX ")
+		self.replaceAll(edit, " TQ SH ", " CHQ ")
+		self.replaceAll(edit, " T SH ", " CH ")
+		self.replaceAll(edit, " D ZH ", " JH ")
+		self.replaceAll(edit, " D Z ", " DZ ")
+		self.replaceAll(edit, " D S ", " DZ ")
+		self.replaceAll(edit, " TX S ", " TSX ")
+		self.replaceAll(edit, " TQ S ", " TSQ ")
+		self.replaceAll(edit, " T S ", " TS ")
+		# replace T or D with DX flap after stressed vowel before reduced vowel
+		self.replaceAll(edit, "1 T (?=..0)", "1 DX ")
+		# replace HH W with WH
+		self.replaceAll(edit, " HH W ", " WH ")
+		# unstressed schwa becomes schwi except initial, final (even before s), or before a vowel or M
+		self.replaceAll(edit, "AH0 ", "IX0 ")
+		self.replaceAll(edit, ": IX0 ", ": AH0 ")
+		self.replaceAll(edit, "IX0 $", "AH0 ")
+		self.replaceAll(edit, "IX0 Z $", "AH0 Z ")
+		self.replaceAll(edit, "IX0 M ", "AH0 M ")
+		# respell schwi except in -i suffixes
+		self.replaceAll(edit, "IH0", "IX0")
+		self.replaceAll(edit, "IX0 KQ ", "IH0 KQ ") #use short i in -ic
+		self.replaceAll(edit, "IX0 NG ", "IH0 NG ") #use short i in -ing
+		self.replaceAll(edit, "IX0 SH ", "IH0 SH ") #use short i in -ish
+		self.replaceAll(edit, "IX0 S TQ ", "IH0 S TQ ") #use short i in -ist
+		self.replaceAll(edit, "IX0 S M ", "IH0 S M ") #use short i in -ism
+		self.replaceAll(edit, "IX0 KQ S ", "IH0 KQ S ") #use short i in -ics, -ix
+		# unstressed schwa becomes closed schwa before dark l
+		self.replaceAll(edit, "IX0 LL ", "AX0 LL ")
+		#use Catch instead of Break in uh-oh
+		self.replaceAll(edit, "AH1 OW2 ", "AH1 Q OW2 ")
+		#insert break between vowels
+		self.insertBreak(edit)
+		self.replaceAll(edit, "IX0 BREAK ", "AH0 BREAK ")
+		#special cases
+		self.replaceAll(edit, " M Y UW1 S AH0 ", " M UW1 S AH0 ")
+		self.replaceAll(edit, " LL F IX0 B ", " LL F AH0 B ")
+
+		# transcribe vowels
+		self.replaceAll(edit, "AA1 R ", "\\uE0E8R ")
+		self.replaceAll(edit, "AA1 ", "\\uE0E8\\uE050")
+		self.replaceAll(edit, "AA2 R ", "\\uE0ECR ")
+		self.replaceAll(edit, "AA2 ", "\\uE0EC\\uE054")
+		self.replaceAll(edit, "AA0 ", "\\uE0EC")
+		self.replaceAll(edit, "AE1 ", "\\uE0F0")
+		self.replaceAll(edit, "AE[2|0] ", "\\uE0F4")
+		self.replaceAll(edit, "AH1 ", "\\uE080")
+		self.replaceAll(edit, "AH[2|0] ", "\\uE084")
+		self.replaceAll(edit, "AO1 R ", "\\uE090R ")
+		self.replaceAll(edit, "AO1 ", "\\uE090\\uE050")
+		self.replaceAll(edit, "AO[2|0] R ", "\\uE094R ")
+		self.replaceAll(edit, "AO2 ", "\\uE094\\uE054")
+		self.replaceAll(edit, "AO0 ", "\\uE094")
+		self.replaceAll(edit, "AW1 ", "\\uE0E8\\uE105")
+		self.replaceAll(edit, "AW[2|0] ", "\\uE0EC\\uE105")
+		self.replaceAll(edit, "AY1 ", "\\uE0E8\\uE10B")
+		self.replaceAll(edit, "AY[2|0] ", "\\uE0EC\\uE10B")
+		self.replaceAll(edit, "AX0 ", "\\uE0CC")
+		self.replaceAll(edit, "EH1 ", "\\uE088")
+		self.replaceAll(edit, "EH[2|0] ", "\\uE08C")
+		self.replaceAll(edit, "ER1 ", "\\uE0F8\\uE10F")
+		self.replaceAll(edit, "ER2 ", "\\uE0FC\\uE10F")
+		self.replaceAll(edit, "ER0 ", "\\uE0FC")
+		self.replaceAll(edit, "EY1 ", "\\uE0C0\\uE10B")
+		self.replaceAll(edit, "EY2 ", "\\uE0C4\\uE10B")
+		self.replaceAll(edit, "EY0 ", "\\uE0C4")
+		self.replaceAll(edit, "IH1 ", "\\uE070")
+		self.replaceAll(edit, "IH[2|0] ", "\\uE074")
+		self.replaceAll(edit, "IX0 ", "\\uE0A4")
+		self.replaceAll(edit, "IY1 ", "\\uE0D8\\uE10B")
+		self.replaceAll(edit, "IY2 ", "\\uE0DC\\uE10B")
+		self.replaceAll(edit, "IY0 ", "\\uE0DC")
+		self.replaceAll(edit, "OW1 ", "\\uE0B8\\uE105")
+		self.replaceAll(edit, "OW2 ", "\\uE0BC\\uE105")
+		self.replaceAll(edit, "OW0 ", "\\uE0BC")
+		self.replaceAll(edit, "OY1 ", "\\uE090\\uE10B")
+		self.replaceAll(edit, "OY[2|0] ", "\\uE094\\uE10B")
+		self.replaceAll(edit, "UH1 ", "\\uE068")
+		self.replaceAll(edit, "UH[2|0] ", "\\uE06C")
+		self.replaceAll(edit, "UW1 ", "\\uE0A8\\uE105")
+		self.replaceAll(edit, "UW2 ", "\\uE0AC\\uE105")
+		self.replaceAll(edit, "UW0 ", "\\uE0AC")
+		#transcribe consonants, longest first
+		self.replaceAll(edit, "BREAK ", "\\uE100")
+		self.replaceAll(edit, "CHX ", "\\uE164")
+		self.replaceAll(edit, "CHQ ", "\\uE184")
+		self.replaceAll(edit, "TSX ", "\\uE167")
+		self.replaceAll(edit, "TSQ ", "\\uE187")
+		self.replaceAll(edit, "DX ", "\\uE1F0")
+		self.replaceAll(edit, "DZ ", "\\uE137")
+		self.replaceAll(edit, "TZ ", "\\uE1E7")
+		self.replaceAll(edit, "TS ", "\\uE1E7")
+		self.replaceAll(edit, "KQ ", "\\uE183")
+		self.replaceAll(edit, "TQ ", "\\uE180")
+		self.replaceAll(edit, "PQ ", "\\uE188")
+		self.replaceAll(edit, "KX ", "\\uE163")
+		self.replaceAll(edit, "TX ", "\\uE160")
+		self.replaceAll(edit, "PX ", "\\uE168")
+		self.replaceAll(edit, "CH ", "\\uE1E4")
+		self.replaceAll(edit, "TH ", "\\uE1C0")
+		self.replaceAll(edit, "DH ", "\\uE140")
+		self.replaceAll(edit, "SH ", "\\uE1C4")
+		self.replaceAll(edit, "ZH ", "\\uE144")
+		self.replaceAll(edit, "JH ", "\\uE134")
+		self.replaceAll(edit, "HH ", "\\uE104")
+		self.replaceAll(edit, "WH ", "\\uE105")
+		self.replaceAll(edit, "LL ", "\\uE153")
+		self.replaceAll(edit, "NG ", "\\uE113")
+		self.replaceAll(edit, "Q ", "\\uE103")
+		self.replaceAll(edit, "P ", "\\uE1E8")
+		self.replaceAll(edit, "T ", "\\uE1E0")
+		self.replaceAll(edit, "K ", "\\uE1E3")
+		self.replaceAll(edit, "B ", "\\uE138")
+		self.replaceAll(edit, "D ", "\\uE130")
+		self.replaceAll(edit, "G ", "\\uE133")
+		self.replaceAll(edit, "F ", "\\uE1C6")
+		self.replaceAll(edit, "V ", "\\uE146")
+		self.replaceAll(edit, "S ", "\\uE1C7")
+		self.replaceAll(edit, "Z ", "\\uE147")
+		self.replaceAll(edit, "M ", "\\uE118")
+		self.replaceAll(edit, "N ", "\\uE110")
+		self.replaceAll(edit, "L ", "\\uE150")
+		self.replaceAll(edit, "R ", "\\uE10F")
+		self.replaceAll(edit, "W ", "\\uE105")
+		self.replaceAll(edit, "Y ", "\\uE10B")
+
+		# add quotes and commas
+		self.replaceAll(edit, "\n", "\",\n")
+		self.replaceAll(edit, ":", ":\"")
+		# add header and footer, remove last comma
+		self.view.insert(edit, 0, "var dict = {\n")
+		self.view.insert(edit, self.view.size(), "};")
+		self.replaceAll(edit, ",\n};", "\n};")
