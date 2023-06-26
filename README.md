@@ -11,3 +11,8 @@ language-based, each in their own directory, currently:
 - [Vietnamese](https://www.musa.bet/transviet.htm)
 - [Yoruba](https://www.musa.bet/abanikoro.htm)
 - [Kazak](https://www.musa.bet/transqazaq.htm)
+
+# todos
+- add the rest of the transcribers, perhaps @Peter
+- refactor the transcribers code
+  - lower priority since it works, but harder to add to
